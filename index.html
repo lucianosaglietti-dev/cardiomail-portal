@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Estudios — Dr. Saglietti Cardiología</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+}
+.hdr {
+  background: #1e3a5f;
+  padding: 28px 32px;
+  text-align: center;
+}
+.hdr h1 { color: white; font-size: 22px; margin-bottom: 4px; }
+.hdr p  { color: #93c5fd; font-size: 13px; }
+.bdy { padding: 32px; }
+.bdy > p {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 6px;
+}
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 16px;
+  outline: none;
+}
+input:focus { border-color: #2563eb; }
+#codigo { text-transform: uppercase; letter-spacing: 4px; }
+button {
+  width: 100%;
+  padding: 13px;
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: #2563eb; }
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+.ftr {
+  background: #f8fafc;
+  padding: 14px 32px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* Resultado */
+#resultado { display: none; }
+.bienvenida { font-size: 15px; color: #374151; margin-bottom: 20px; }
+.estudio-btn {
+  display: flex;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  color: #1e3a5f;
+  font-weight: bold;
+  font-size: 15px;
+  background: #f8fafc;
+}
+.estudio-btn:hover { background: #eff6ff; border-color: #2563eb; color: #2563eb; }
+.estudio-ico { font-size: 20px; margin-right: 12px; }
+.estudio-lbl { flex: 1; }
+.estudio-arr { font-size: 12px; color: #9ca3af; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; }
+.nota { font-size: 12px; color: #9ca3af; margin-top: 20px; line-height: 1.5; }
+
+/* Error */
+.error-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 14px;
+  color: #dc2626;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.loading { text-align: center; color: #6b7280; font-size: 14px; padding: 12px 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hdr">
+    <h1>Portal de Estudios</h1>
+    <p>Dr. Saglietti Luciano — Cardiología</p>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login" class="bdy">
+    <p>Ingrese su DNI y el código de acceso que recibió por mail para ver sus estudios.</p>
+    <div id="error-msg" class="error-box" style="display:none;"></div>
+    <label for="dni">Número de DNI</label>
+    <input type="text" id="dni" placeholder="Ej: 28456789" inputmode="numeric" maxlength="10">
+    <label for="codigo">Código de acceso</label>
+    <input type="text" id="codigo" placeholder="Ej: AB3X7K" maxlength="6">
+    <div id="loading" class="loading" style="display:none;">Verificando...</div>
+    <button id="btn-ingresar" onclick="ingresar()">Ver mis estudios</button>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultado" class="bdy">
+    <p class="bienvenida" id="saludo"></p>
+    <div id="lista-estudios"></div>
+    <p class="nota">Haga click en cada estudio para abrirlo o descargarlo.<br>Ante cualquier duda comuníquese con el consultorio.</p>
+    <br>
+    <button onclick="volver()" style="background:#64748b;">Volver</button>
+  </div>
+
+  <div class="ftr">El código fue enviado al mail registrado en el consultorio.</div>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbbbqkautj712gXmfKobQgJPFpqr0VFFOfcVn7LeVclL0EkrwjSQiENPv90f_jXI_s_Q/exec";
+
+function ingresar() {
+  var dni    = document.getElementById("dni").value.trim();
+  var codigo = document.getElementById("codigo").value.trim().toUpperCase();
+
+  document.getElementById("error-msg").style.display = "none";
+
+  if (!dni || !codigo) {
+    mostrarError("Por favor ingrese su DNI y código de acceso.");
+    return;
+  }
+  if (codigo.length < 6) {
+    mostrarError("El código tiene 6 caracteres.");
+    return;
+  }
+
+  document.getElementById("btn-ingresar").disabled = true;
+  document.getElementById("loading").style.display = "block";
+
+  var url = APPS_SCRIPT_URL + "?dni=" + encodeURIComponent(dni) + "&codigo=" + encodeURIComponent(codigo);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("btn-ingresar").disabled = false;
+
+      if (!data.ok) {
+        mostrarError(data.msg);
+        return;
+      }
+
+      document.getElementById("saludo").innerHTML =
+        "Bienvenido/a, <strong>" + data.nombre + "</strong>. Sus estudios disponibles:";
+
+      var lista = "";
+      for (var i = 0; i < data.estudios.length; i++) {
+        var e = data.estudios[i];
+        lista += '<a href="' + e.url + '" target="_blank" class="estudio-btn">';
+        lista += '<span class="estudio-ico">📄</span>';
+        lista += '<span class="estudio-lbl">' + e.label + '</span>';
+        lista += '<span class="estudio-arr">Abrir</span>';
+        lista += '</a>';
+      }
+      document.getElementById("lista-estudios").innerHTML = lista;
+      document.getElementById("login").style.display = "none";
+      document.getElementById("resultado").style.display = "block";
+    })
+    .catch(function(err) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("btn-ingresar").disabled = false;
+      mostrarError("Error de conexión. Intente nuevamente.");
+    });
+}
+
+function mostrarError(msg) {
+  var el = document.getElementById("error-msg");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function volver() {
+  document.getElementById("login").style.display = "block";
+  document.getElementById("resultado").style.display = "none";
+  document.getElementById("error-msg").style.display = "none";
+}
+
+document.getElementById("codigo").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") ingresar();
+});
+document.getElementById("dni").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") document.getElementById("codigo").focus();
+});
+</script>
+</body>
+</html>
