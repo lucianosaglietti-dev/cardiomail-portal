@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Presión y Frecuencia — Dr. Saglietti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F1EA;
+    --grid-fine: rgba(178,58,46,0.09);
+    --grid-bold: rgba(178,58,46,0.18);
+    --ink:#182B3A;
+    --ink-soft:#4B5A67;
+    --crimson:#B23A2E;
+    --sage:#5E7F5E;
+    --line:#D9CCBE;
+    --card:#FFFEFB;
+    --amber:#B8842E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(0deg, var(--grid-fine) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(90deg, var(--grid-fine) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(0deg, var(--grid-bold) 0 1px, transparent 1px 25px),
+      repeating-linear-gradient(90deg, var(--grid-bold) 0 1px, transparent 1px 25px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:20px 18px 60px;}
+
+  header.hero{padding:18px 0 8px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--crimson);
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(28px,6vw,38px);
+    margin:0 0 4px;
+    line-height:1.05;
+  }
+  .sub{color:var(--ink-soft); font-size:14.5px; margin:0 0 18px; max-width:52ch;}
+
+  .pulse-box{
+    position:relative;
+    height:64px;
+    margin:0 0 22px;
+    overflow:hidden;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .pulse-track{
+    position:absolute; top:0; left:0; height:100%;
+    display:flex; align-items:center;
+    animation: scroll 6s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .pulse-track{ animation:none; } }
+  @keyframes scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  .pulse-track svg{display:block; height:64px; width:auto;}
+
+  nav.tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .tabs button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    padding:9px 14px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-radius:3px;
+  }
+  .tabs button.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 14px;
+  }
+  label{
+    display:block; font-size:12.5px; color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace; letter-spacing:.03em;
+    margin-bottom:5px; margin-top:12px;
+  }
+  label:first-of-type{margin-top:0;}
+  input[type=text], input[type=number], input[type=date], select{
+    width:100%; padding:10px 11px; font-size:16px;
+    border:1px solid var(--line); border-radius:4px;
+    background:#fff; color:var(--ink); font-family:'IBM Plex Mono', monospace;
+  }
+  input:focus, select:focus, button:focus-visible{
+    outline:2px solid var(--crimson); outline-offset:1px;
+  }
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .btn{
+    margin-top:16px; width:100%; padding:13px; border:none; border-radius:4px;
+    background:var(--crimson); color:#fff; font-size:15px; font-weight:600;
+    cursor:pointer; font-family:'IBM Plex Sans', sans-serif;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn.secondary{ background:transparent; color:var(--ink); border:1px solid var(--line); font-weight:500;}
+
+  .role-grid{display:grid; gap:14px;}
+  .role-card{
+    background:var(--card); border:1px solid var(--line); border-radius:6px;
+    padding:22px; text-align:left; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+  }
+  .role-card .k{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--crimson); letter-spacing:.1em; text-transform:uppercase;}
+  .role-card h3{font-family:'Fraunces',serif; font-size:22px; margin:6px 0 4px; font-weight:600;}
+  .role-card p{margin:0; color:var(--ink-soft); font-size:14px;}
+
+  .badge{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11px;
+    padding:2px 8px; border-radius:10px; margin-left:6px;
+  }
+  .badge.ok{background:rgba(94,127,94,.15); color:var(--sage);}
+  .badge.warn{background:rgba(184,132,46,.18); color:var(--amber);}
+  .badge.high{background:rgba(178,58,46,.15); color:var(--crimson);}
+
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+  th,td{text-align:left; padding:8px 6px; border-bottom:1px solid var(--line);}
+  th{color:var(--ink-soft); font-weight:500; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em;}
+
+  .empty{color:var(--ink-soft); font-size:14px; padding:14px 0; text-align:center;}
+  .back{background:none; border:none; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; font-size:12.5px; cursor:pointer; padding:0; margin-bottom:14px;}
+  .notice{
+    background:rgba(184,132,46,.1); border:1px solid rgba(184,132,46,.35);
+    border-radius:5px; padding:10px 12px; font-size:12.5px; color:#7a5a1f; margin-bottom:16px;
+  }
+  .patient-list{list-style:none; margin:0; padding:0;}
+  .patient-list li{
+    padding:12px 10px; border-bottom:1px solid var(--line); cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .patient-list li:hover{background:rgba(178,58,46,.05);}
+  .patient-list .last{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);}
+  .chart-legend{display:flex; gap:16px; font-size:12px; font-family:'IBM Plex Mono',monospace; margin-bottom:6px; flex-wrap:wrap;}
+  .chart-legend span{display:flex; align-items:center; gap:5px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---------- CONFIGURACIÓN ----------
+// Pegá acá la URL que te dio Google Apps Script al implementar (termina en /exec)
+const CONFIG = {
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbyo8ZEgyCpmdSCER3H7dKtQMfqG3BJmaS-6MAGQcD2WdmELEvQAmoVBBE4zVmiVtABqpA/exec'
+};
+
+// ---------- Utilidades de conexión con la planilla ----------
+async function apiGet(params){
+  if(!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('PEGA_ACA')){
+    throw new Error('CONFIG_FALTA');
+  }
+  const url = CONFIG.scriptUrl + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function apiPost(body){
+  if(!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('PEGA_ACA')){
+    throw new Error('CONFIG_FALTA');
+  }
+  const res = await fetch(CONFIG.scriptUrl, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function fetchPacientes(){
+  try{
+    const r = await apiGet({action:'pacientes'});
+    return r.pacientes || [];
+  }catch(e){ console.error(e); return null; }
+}
+async function fetchLecturas(slug){
+  try{
+    const r = await apiGet({action:'list', slug});
+    return r.lecturas || [];
+  }catch(e){ console.error(e); return null; }
+}
+async function guardarLectura(nombre, slug, lectura, attempt){
+  attempt = attempt || 1;
+  try{
+    await apiPost({nombre, slug, ...lectura});
+    return true;
+  }catch(e){
+    console.error('guardado error', e);
+    if(attempt < 3){
+      await new Promise(res=>setTimeout(res, 400*attempt));
+      return guardarLectura(nombre, slug, lectura, attempt+1);
+    }
+    return false;
+  }
+}
+function slugify(name){
+  return name.trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+function fmtDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso+'T00:00:00');
+  if(isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+}
+function fmtHora(hora){
+  return hora ? hora : '—';
+}
+function sortKey(r){
+  return r.fecha + 'T' + (r.hora || '00:00');
+}
+function bpBadge(sist, diast){
+  if(sist>=140 || diast>=90) return {c:'high', t:'Elevada'};
+  if(sist>=130 || diast>=85) return {c:'warn', t:'Límite'};
+  return {c:'ok', t:'Normal'};
+}
+
+// ---------- Estado ----------
+let state = { view:'landing', patientName:'', doctorSelected:null, patientsCache:[] };
+const app = document.getElementById('app');
+
+// ---------- Onda de pulso decorativa ----------
+function pulseSvg(){
+  const seg = 'M0,32 L40,32 L52,32 L58,8 L66,56 L74,32 L86,32 L96,18 L104,32 L400,32';
+  return `<svg viewBox="0 0 400 64" preserveAspectRatio="none">
+    <path d="${seg}" fill="none" stroke="#B23A2E" stroke-width="2" opacity="0.85"/>
+  </svg>`;
+}
+function renderPulseHeader(){
+  return `<div class="pulse-box"><div class="pulse-track">${pulseSvg()}${pulseSvg()}</div></div>`;
+}
+
+// ---------- Gráfico SVG simple ----------
+function lineChart(readings){
+  if(readings.length===0) return '<p class="empty">Todavía no hay registros para graficar.</p>';
+  const w=640, h=200, padL=36, padR=10, padT=14, padB=26;
+  const vals = readings.flatMap(r=>[r.sist, r.diast, r.fc]);
+  const min = Math.max(30, Math.min(...vals)-8);
+  const max = Math.max(...vals)+8;
+  const x = i => padL + (i/(Math.max(readings.length-1,1))) * (w-padL-padR);
+  const y = v => h-padB - ((v-min)/(max-min)) * (h-padT-padB);
+  const path = arr => arr.map((r,i)=> (i===0?'M':'L')+x(i).toFixed(1)+','+y(r).toFixed(1)).join(' ');
+  const sistPath = path(readings.map(r=>r.sist));
+  const diastPath = path(readings.map(r=>r.diast));
+  const fcPath = path(readings.map(r=>r.fc));
+  let gridLines = '';
+  for(let i=0;i<4;i++){
+    const gy = padT + i*((h-padT-padB)/3);
+    gridLines += `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${w-padR}" y2="${gy.toFixed(1)}" stroke="#D9CCBE" stroke-width="1"/>`;
+  }
+  const lastIdx = readings.length-1;
+  return `
+  <div class="chart-legend">
+    <span><i class="dot" style="background:#B23A2E"></i>Sistólica</span>
+    <span><i class="dot" style="background:#B8842E"></i>Diastólica</span>
+    <span><i class="dot" style="background:#182B3A"></i>Frec. cardíaca</span>
+  </div>
+  <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto;">
+    ${gridLines}
+    <path d="${sistPath}" fill="none" stroke="#B23A2E" stroke-width="2.2"/>
+    <path d="${diastPath}" fill="none" stroke="#B8842E" stroke-width="2.2"/>
+    <path d="${fcPath}" fill="none" stroke="#182B3A" stroke-width="1.6" stroke-dasharray="3,3"/>
+    <circle cx="${x(lastIdx)}" cy="${y(readings[lastIdx].sist)}" r="3.5" fill="#B23A2E"/>
+    <circle cx="${x(lastIdx)}" cy="${y(readings[lastIdx].diast)}" r="3.5" fill="#B8842E"/>
+  </svg>`;
+}
+
+// ---------- Vistas ----------
+function renderLanding(){
+  const configFalta = !CONFIG.scriptUrl || CONFIG.scriptUrl.includes('PEGA_ACA');
+  app.innerHTML = `
+    <header class="hero">
+      <p class="eyebrow">Consultorio Dr. Saglietti · San Martín de los Andes</p>
+      <h1>Registro de presión<br>y frecuencia cardíaca</h1>
+      <p class="sub">Cargá tus valores día a día y quedan guardados en un mismo lugar, con gráfico de evolución. El Dr. Saglietti puede consultarlos cuando lo necesite.</p>
+    </header>
+    ${renderPulseHeader()}
+    ${configFalta ? `<div class="notice" style="background:rgba(178,58,46,.1); border-color:rgba(178,58,46,.35); color:var(--crimson);">
+      Falta conectar la planilla de Google. Pegá la URL de tu Apps Script en <b>CONFIG.scriptUrl</b>, arriba en el código de este archivo.
+    </div>` : `<div class="notice">Esta es una herramienta simple para uso interno del consultorio. Los datos cargados quedan guardados en tu Google Sheet privada.</div>`}
+    <div class="role-grid">
+      <button class="role-card" id="goPaciente">
+        <span class="k">Acceso paciente</span>
+        <h3>Cargar mis valores</h3>
+        <p>Anotá tu presión y frecuencia cardíaca de hoy y mirá cómo vino evolucionando.</p>
+      </button>
+      <button class="role-card" id="goMedico">
+        <span class="k">Acceso profesional</span>
+        <h3>Panel del Dr. Saglietti</h3>
+        <p>Buscar un paciente y revisar su historial completo con gráfico.</p>
+      </button>
+    </div>
+  `;
+  document.getElementById('goPaciente').onclick = ()=>{ state.view='paciente-id'; render(); };
+  document.getElementById('goMedico').onclick = async ()=>{
+    state.view='medico-lista';
+    render();
+  };
+}
+
+function renderPacienteId(){
+  app.innerHTML = `
+    <button class="back" id="back">← Volver</button>
+    <div class="card">
+      <h2>¿Quién sos?</h2>
+      <label>Nombre y apellido</label>
+      <input type="text" id="nameInput" placeholder="Ej: María Fernández" value="${state.patientName || ''}">
+      <button class="btn" id="continueBtn">Continuar</button>
+    </div>
+  `;
+  document.getElementById('back').onclick = ()=>{ state.view='landing'; render(); };
+  document.getElementById('continueBtn').onclick = ()=>{
+    const name = document.getElementById('nameInput').value.trim();
+    if(!name){ alert('Ingresá tu nombre para continuar.'); return; }
+    state.patientName = name;
+    state.view='paciente-panel';
+    render();
+  };
+}
+
+async function renderPacientePanel(){
+  const slug = slugify(state.patientName);
+  app.innerHTML = `<div class="card"><p class="empty">Cargando...</p></div>`;
+  const raw = await fetchLecturas(slug);
+  if(raw === null){
+    app.innerHTML = `<div class="card">
+      <p style="color:var(--crimson);">No se pudo conectar con la planilla. Verificá tu conexión a internet e intentá de nuevo.</p>
+      <button class="btn secondary" id="retry">Reintentar</button>
+    </div>`;
+    document.getElementById('retry').onclick = renderPacientePanel;
+    return;
+  }
+  const readings = raw.sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
+
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  const nowTime = now.toTimeString().slice(0,5);
+  const rowsHtml = readings.slice().reverse().map(r=>{
+    const b = bpBadge(r.sist, r.diast);
+    return `<tr>
+      <td>${fmtDate(r.fecha)}<br><span style="color:var(--ink-soft); font-size:11.5px;">${fmtHora(r.hora)}</span></td>
+      <td>${r.sist}/${r.diast} <span class="badge ${b.c}">${b.t}</span></td>
+      <td>${r.fc} lpm</td>
+    </tr>`;
+  }).join('');
+
+  app.innerHTML = `
+    <button class="back" id="back">← Cambiar de usuario</button>
+    <header class="hero" style="padding-top:0;">
+      <p class="eyebrow">Hola, ${state.patientName}</p>
+      <h1 style="font-size:26px;">Tu registro</h1>
+    </header>
+    <div class="card">
+      <h2>Nueva medición</h2>
+      <div class="row3">
+        <div>
+          <label>Sistólica</label>
+          <input type="number" id="sist" placeholder="120" inputmode="numeric">
+        </div>
+        <div>
+          <label>Diastólica</label>
+          <input type="number" id="diast" placeholder="80" inputmode="numeric">
+        </div>
+        <div>
+          <label>Frec. card.</label>
+          <input type="number" id="fc" placeholder="70" inputmode="numeric">
+        </div>
+      </div>
+      <div class="row3" style="grid-template-columns:1fr 1fr;">
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="fecha" value="${today}">
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" id="hora" value="${nowTime}">
+        </div>
+      </div>
+      <button class="btn" id="saveBtn">Guardar medición</button>
+      <p id="saveError" style="display:none; color:var(--crimson); font-size:13px; margin-top:10px;"></p>
+    </div>
+    <div class="card">
+      <h2>Historial (${readings.length})</h2>
+      ${readings.length ? `<table><thead><tr><th>Fecha / hora</th><th>Presión</th><th>Frec.</th></tr></thead><tbody>${rowsHtml}</tbody></table>` : '<p class="empty">Todavía no cargaste ninguna medición.</p>'}
+      <div style="margin-top:16px;">${lineChart(readings)}</div>
+    </div>
+  `;
+  document.getElementById('back').onclick = ()=>{ state.view='paciente-id'; render(); };
+  document.getElementById('saveBtn').onclick = async ()=>{
+    const sist = parseInt(document.getElementById('sist').value);
+    const diast = parseInt(document.getElementById('diast').value);
+    const fc = parseInt(document.getElementById('fc').value);
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    const errEl = document.getElementById('saveError');
+    errEl.style.display='none';
+    if(!sist || !diast || !fc || !fecha){ alert('Completá los tres valores y la fecha.'); return; }
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    const ok = await guardarLectura(state.patientName, slug, {fecha, hora, sist, diast, fc});
+    if(!ok){
+      errEl.textContent = 'No se pudo guardar. Verificá tu conexión y volvé a intentar en unos segundos.';
+      errEl.style.display='block';
+      btn.disabled=false; btn.textContent='Guardar medición';
+      return;
+    }
+    renderPacientePanel();
+  };
+}
+
+async function renderMedicoLista(){
+  app.innerHTML = `<div class="card"><p class="empty">Cargando pacientes...</p></div>`;
+  const list = await fetchPacientes();
+  if(list === null){
+    app.innerHTML = `<div class="card">
+      <p style="color:var(--crimson);">No se pudo conectar con la planilla. Verificá tu conexión e intentá de nuevo.</p>
+      <button class="btn secondary" id="retry">Reintentar</button>
+    </div>`;
+    document.getElementById('retry').onclick = renderMedicoLista;
+    return;
+  }
+  app.innerHTML = `
+    <button class="back" id="back">← Volver</button>
+    <header class="hero" style="padding-top:0;">
+      <p class="eyebrow">Panel profesional</p>
+      <h1 style="font-size:26px;">Pacientes</h1>
+    </header>
+    <div class="card">
+      <label>Buscar</label>
+      <input type="text" id="search" placeholder="Escribí un nombre...">
+      <ul class="patient-list" id="list" style="margin-top:14px;"></ul>
+      ${list.length===0 ? '<p class="empty">Todavía no hay pacientes cargados.</p>' : ''}
+    </div>
+  `;
+  document.getElementById('back').onclick = ()=>{ state.view='landing'; render(); };
+  function paint(filter){
+    const ul = document.getElementById('list');
+    const filtered = list.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase()));
+    ul.innerHTML = filtered.map(p=>`<li data-slug="${p.slug}" data-name="${p.name}"><span>${p.name}</span></li>`).join('');
+    ul.querySelectorAll('li').forEach(li=>{
+      li.onclick = ()=>{
+        state.doctorSelected = {name: li.dataset.name, slug: li.dataset.slug};
+        state.view = 'medico-detalle';
+        render();
+      };
+    });
+  }
+  paint('');
+  document.getElementById('search').oninput = (e)=>paint(e.target.value);
+}
+
+async function renderMedicoDetalle(){
+  const {name, slug} = state.doctorSelected;
+  app.innerHTML = `<div class="card"><p class="empty">Cargando...</p></div>`;
+  const raw = await fetchLecturas(slug);
+  if(raw === null){
+    app.innerHTML = `<div class="card">
+      <p style="color:var(--crimson);">No se pudo conectar con la planilla. Verificá tu conexión e intentá de nuevo.</p>
+      <button class="btn secondary" id="retry">Reintentar</button>
+    </div>`;
+    document.getElementById('retry').onclick = renderMedicoDetalle;
+    return;
+  }
+  const readings = raw.sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
+  const rowsHtml = readings.slice().reverse().map(r=>{
+    const b = bpBadge(r.sist, r.diast);
+    return `<tr><td>${fmtDate(r.fecha)}<br><span style="color:var(--ink-soft); font-size:11.5px;">${fmtHora(r.hora)}</span></td><td>${r.sist}/${r.diast} <span class="badge ${b.c}">${b.t}</span></td><td>${r.fc} lpm</td></tr>`;
+  }).join('');
+
+  app.innerHTML = `
+    <button class="back" id="back">← Lista de pacientes</button>
+    <header class="hero" style="padding-top:0;">
+      <p class="eyebrow">Paciente</p>
+      <h1 style="font-size:26px;">${name}</h1>
+    </header>
+    <div class="card">
+      <h2>Historial (${readings.length})</h2>
+      ${readings.length ? `<table><thead><tr><th>Fecha / hora</th><th>Presión</th><th>Frec.</th></tr></thead><tbody>${rowsHtml}</tbody></table>` : '<p class="empty">Este paciente todavía no cargó mediciones.</p>'}
+      <div style="margin-top:16px;">${lineChart(readings)}</div>
+    </div>
+  `;
+  document.getElementById('back').onclick = ()=>{ state.view='medico-lista'; render(); };
+}
+
+function render(){
+  if(state.view==='landing') renderLanding();
+  else if(state.view==='paciente-id') renderPacienteId();
+  else if(state.view==='paciente-panel') renderPacientePanel();
+  else if(state.view==='medico-lista') renderMedicoLista();
+  else if(state.view==='medico-detalle') renderMedicoDetalle();
+}
+render();
+</script>
+</body>
+</html>
